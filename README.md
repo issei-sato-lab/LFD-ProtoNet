@@ -1,7 +1,5 @@
 # LFD-ProtoNet: Prototypical Network Based on Local Fisher Discriminant Analysis for Few-shot Learning
 
-Code for the NeurIPS 2020 paper LFD-ProtoNet: Prototypical Network Based on Local Fisher Discriminant Analysis for Few-shot Learning
-
 ## Dependencies
 * This code is tested on Ubuntu 18.04.3 with Python 3.6.9 and chainer 6.5.0
 
