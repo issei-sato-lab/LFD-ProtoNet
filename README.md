@@ -1,4 +1,4 @@
-# LFD-ProtoNet: Prototypical Network Based on Local Fisher Discriminant Analysis for Few-shot Learning
+# FD-ProtoNet: Prototypical Network Based on Local Fisher Discriminant Analysis for Few-shot Learning
 
 ## Dependencies
 * This code is tested on Ubuntu 18.04.3 with Python 3.6.9 and chainer 6.5.0
@@ -7,7 +7,7 @@
 ### miniImageNet
 #Download and unzip "mini-imagenet.tar.gz" from Google Drive link [[mini-ImageNet](https://drive.google.com/file/d/1DvYd7LMa0zvlqTM8oBdCWwQSxpZdf_D5/view?usp=sharing)]
  
-#Place ``train.npz``, ``val.npz``, ``test.npz`` files in ``LFD_ProtoNet/miniImageNet_LFD_ProtoNet/data``
+#Place ``train.npz``, ``val.npz``, ``test.npz`` files in ``FD_ProtoNet/miniImageNet_LFD_ProtoNet/data``
 
 
 ### tieredImageNet
@@ -20,8 +20,8 @@
 ```
 #For miniImageNet experiment
 
-cd  /LFD_ProtoNet/miniImageNet_LFD_ProtoNet/scripts
-python train_LFD_ProtoNet_miniImageNet.py --gpu {GPU device number}
+cd  /FD_ProtoNet/miniImageNet/scripts
+python train.py --gpu {GPU device number}
                                     --n_shot {n_shot}
                                     --nb_class_train {number of classes in training}
                                     --nb_class_test {number of classes in test}
@@ -31,8 +31,8 @@ python train_LFD_ProtoNet_miniImageNet.py --gpu {GPU device number}
 
 #For tieredImageNet experiment
 
-cd /LFD_ProtoNet/tieredImageNet_LFD_ProtoNet/scripts
-python train_LFD_ProtoNet_tieredImageNet.py --gpu {GPU device number}
+cd /FD_ProtoNet/tieredImageNet/scripts
+python train.py --gpu {GPU device number}
                                     --n_shot {n_shot}
                                     --nb_class_train {number of classes in training}
                                     --nb_class_test {number of classes in test}

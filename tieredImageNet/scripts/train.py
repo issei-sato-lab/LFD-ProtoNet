@@ -12,7 +12,10 @@ from chainer import cuda
 from chainer import serializers
 
 from utils.generators import tieredImageNetGenerator
-from utils.model_LFD_ProtoNet_ResNet12 import LFD_ProtoNet
+from utils.FD_ProtoNet import FD_ProtoNet
+ 
+
+ 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -40,7 +43,7 @@ if __name__ == '__main__':
         os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
         os.environ["CUDA_VISIBLE_DEVICES"]="%d" %args.gpu
         xp = cp
-    dimension=128
+    dimension=512
     max_iter=50000
     lrdecay = True
     lrstep = 40000
@@ -50,10 +53,10 @@ if __name__ == '__main__':
     nb_class_train=args.nb_class_train
     nb_class_test=args.nb_class_test
     wd_rate=args.wd_rate
-    savefile_name='save/LFD_ProtoNet_tieredImageNet_ResNet12.mat'
-    filename_5shot='save/LFD_ProtoNet_tieredImageNet_ResNet12'
-    filename_5shot_last='save/LFD_ProtoNet_tieredImageNet_ResNet12_last'
-    load_file_5_shot='save/LFD_ProtoNet_tieredImageNet_ResNet12_last_5_shot'
+    savefile_name='save/LFD_ProtoNet_tieredImageNet_ResNet12_simple.mat'
+    filename_5shot='save/LFD_ProtoNet_tieredImageNet_ResNet12_simple'
+    filename_5shot_last='save/LFD_ProtoNet_tieredImageNet_ResNet12_last_simple'
+    load_file_5_shot='save/LFD_ProtoNet_tieredImageNet_ResNet12_last_5_shot_simple'
 
     # set up training
     # ------------------
@@ -79,16 +82,17 @@ if __name__ == '__main__':
 
     # start training
     # ----------------
-    
     for t, (images, labels) in train_generator:
         loss = model.train(images, labels)
-        # logging 
         loss_h.extend([loss.tolist()])
         if ((t != 0) and t % 50 == 0):
             print("Episode: %d, Train Loss: %f "%(t, loss))
-    
+            with open('./save/sb_sw_memo_simple.txt',mode='a') as f:
+                f.write("Episode: %d, Train Loss: %f \n"%(t,loss))
         if (t != 0) and (t % 500 == 0):                
             print('Evaluation in Validation data')
+            with open('./save/sb_sw_memo_simple.txt',mode='a') as f:
+                f.write("Evaluation in Validation data\n")
             test_generator = tieredImageNetGenerator(image_file='../data/val_images.npz', label_file='../data/val_labels.pkl', 
                                                nb_classes=nb_class_test, nb_samples_per_class=n_shot+n_query_test, 
                                                max_iter=600, xp=xp)
@@ -98,9 +102,10 @@ if __name__ == '__main__':
                 accs_ = [cuda.to_cpu(acc) for acc in accs]
                 score = np.asarray(accs_, dtype=int)
                 scores.append(score)
-            print(('Accuracy 5 shot ={:.2f}%').format(100*np.mean(np.array(scores))))
+            print(('Accuracy 5 shot ={:.2f}%').format(100*np.mean(np.array(scores))))            
+            with open('./save/sb_sw_memo_simple.txt',mode='a') as f:
+                f.write(('Accuracy 5 shot ={:.2f}%\n').format(100*np.mean(np.array(scores))))
             accuracy_t=100*np.mean(np.array(scores))
-            
             if acc_best < accuracy_t:
                 acc_best = accuracy_t
                 epoch_best=t
@@ -123,6 +128,8 @@ if __name__ == '__main__':
                 score = np.asarray(accs_, dtype=int)
                 scores.append(score)
             print(('Accuracy 5 shot ={:.2f}%').format(100*np.mean(np.array(scores))))
+            with open('./save/sb_sw_memo_simple.txt',mode='a') as f:
+                f.write(('Accuracy 5 shot ={:.2f}%\n').format(100*np.mean(np.array(scores))))
             accuracy_t=100*np.mean(np.array(scores))
             accuracy_h_test.extend([accuracy_t.tolist()])
             del(test_generator)
@@ -137,14 +144,20 @@ if __name__ == '__main__':
             serializers.save_npz(filename_5shot_last,model.chain)
     
         if (t != 0) and (t == lrstep) and lrdecay:
+            with open('./save/sb_sw_memo_simple.txt',mode='a') as f:
+                f.write('decay\n')
+            lrdecay = False
             model.decay_learning_rate(0.1)
-
+        del(images)
+        del(labels)
     
     serializers.save_npz(filename_5shot_last,model.chain)
     accuracy_h5=[]
 
     serializers.load_npz(filename_5shot, model.chain)
     print('Evaluating the best 5shot model...') 
+    with open('./save/sb_sw_memo_simple.txt',mode='a') as f:
+        f.write('Evaluating the best 5shot model...\n')
     for i in range(50):
         test_generator = tieredImageNetGenerator(image_file='../data/test_images.npz', label_file='../data/test_labels.pkl', 
                                                nb_classes=nb_class_test, nb_samples_per_class=n_shot+n_query_test, 
@@ -158,9 +171,14 @@ if __name__ == '__main__':
         accuracy_t=100*np.mean(np.array(scores))
         accuracy_h5.extend([accuracy_t.tolist()])
         print(('600 episodes with 15-query accuracy: 5-shot ={:.2f}%').format(accuracy_t))
+        with open('./save/sb_sw_memo_simple.txt',mode='a') as f:
+            f.write(('600 episodess with 15-query accuracy: 5-shot ={:.2f}%\n').format(accuracy_t))
         del(test_generator)
         del(accs)
         del(accs_)
         del(accuracy_t)   
         sio.savemat(savefile_name, {'accuracy_h_val':accuracy_h_val, 'accuracy_h_test':accuracy_h_test, 'epoch_best':epoch_best,'acc_best':acc_best, 'accuracy_h5':accuracy_h5})
     print(('Accuracy_test 5 shot ={:.2f}%').format(np.mean(accuracy_h5)))
+    with open('./save/sb_sw_memo_simple.txt',mode='a') as f:
+        f.write(('Accuracy_test 5 shot ={:.2f}%\n').format(np.mean(accuracy_h5)))
+
